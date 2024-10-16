@@ -1,0 +1,28 @@
+services:
+  dataBase:
+    container_name: db
+    image: postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: ./.env
+    ports:
+      - 55432:${POSTGRES_PORT}
+
+  mainServer:
+    image: python:3.12
+    container_name: mainServer_local
+    volumes:
+      - ./requirements.txt:/recommend/requirements.txt
+      - ./app:/recommend/app
+    ports:
+      - '8000:${MAIN_SERVER_PORT}'
+    env_file:
+      - .env
+    depends_on:
+      - dataBase
+    working_dir: /recommend
+    command: bash -c "pip install -r requirements.txt && python3 app/app.py"
+
+volumes:
+  postgres_data:

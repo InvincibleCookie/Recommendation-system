@@ -1,0 +1,11 @@
+uvicorn
+fastapi
+psycopg2-binary
+SQLAlchemy
+pydantic
+fastapi-utils
+passlib
+pyjwt
+sqlalchemy-utils
+typing_inspect
+python-multipart
