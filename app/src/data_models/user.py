@@ -1,6 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel
 
+from src.database.postgres_user_table import UserInDB
+
 class UserModel(BaseModel):
     username: str
     password: str
@@ -11,6 +13,13 @@ class FullUserModel(UserModel):
 class PublicUser(BaseModel):
     username: str
     email: str
+
+    @staticmethod
+    def from_db(user: UserInDB) -> 'PublicUser':
+        return PublicUser(
+            username = user.username,
+            email = user.email,
+        )
 
 class TokenModel(BaseModel):
     token: str

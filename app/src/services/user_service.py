@@ -1,6 +1,7 @@
-import auth
-from data_models.user import FullUserModel, PublicUser, TokenData
-from repositories.postgres_user_repository import PostgresUserRepository
+from src.data_models.book import BookIdModel
+import src.auth as auth
+from src.data_models.user import FullUserModel, PublicUser, TokenData
+from src.repositories.postgres.postgres_user_repository import PostgresUserRepository
 
 class UserService:
     def __init__(self):
@@ -26,5 +27,11 @@ class UserService:
 
     def get_user(self, username) -> PublicUser | None:
         return  self.userRepository.get_user(username)
+
+    def like_book(self, username, book_id) -> bool:
+        return  self.userRepository.like_book(username, book_id)
+
+    def get_liked_books(self, username) -> list[BookIdModel]:
+        return self.userRepository.get_liked_books(username)
 
 

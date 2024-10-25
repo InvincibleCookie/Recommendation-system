@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from data_models.user import FullUserModel, PublicUser, TokenData
+from src.data_models.user import FullUserModel, PublicUser, TokenData
 
 class UserRepository:
     @abstractmethod
@@ -17,3 +17,4 @@ class UserRepository:
 
     @abstractmethod
     def get_user(self, username) -> PublicUser | None: pass
+

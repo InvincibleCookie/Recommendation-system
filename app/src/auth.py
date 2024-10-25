@@ -1,9 +1,8 @@
-from math import exp
 import os
 import jwt
 import random, string
 from passlib.context import CryptContext
-from data_models.user import FullTokenData, TokenData
+from src.data_models.user import FullTokenData, TokenData
 from datetime import datetime, timedelta, timezone
 
 SECRET_KEY = os.environ.get("PASSHASH_SECRET_KEY", "fail")

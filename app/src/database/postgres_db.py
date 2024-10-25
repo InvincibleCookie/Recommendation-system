@@ -1,8 +1,6 @@
 import os
-from datetime import datetime
-from typing import List
-from sqlalchemy import Engine, ForeignKey, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import  Engine, create_engine
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy_utils import database_exists, create_database
 
 class Singleton(type):
@@ -38,31 +36,3 @@ class PostgresDB(metaclass=Singleton):
 
         Base.metadata.create_all(engine)
         return engine
-
-class UserInDB(Base):
-    __tablename__ = "user_data"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(unique=True)
-    username: Mapped[str] =  mapped_column(unique=True)
-    password_hash: Mapped[str]
-
-    tokens: Mapped[List["TokenInDB"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-
-    def __repr__(self) -> str:
-        return f"User(id={self.id}), username={self.username}"
-
-class TokenInDB(Base):
-    __tablename__ = "user_token"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user_data.id"))
-    token_id: Mapped[str]
-    expiry_date: Mapped[datetime]
-
-    user: Mapped["UserInDB"] = relationship(back_populates="tokens")
-
-    def __repr__(self) -> str:
-        return f"Token(id={self.id}), token={self.token_id}"
-
-

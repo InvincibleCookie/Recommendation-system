@@ -1,11 +1,12 @@
-import auth
+from src.data_models.book import BookIdModel
+import src.auth as auth
 from typing import Annotated
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette.responses import JSONResponse
-from services.user_service import UserService
+from src.services.user_service import UserService
 from fastapi_utils.cbv import cbv
-from data_models.user import FullUserModel, PublicUser, TokenData, TokenPair
+from src.data_models.user import FullUserModel, PublicUser, TokenData, TokenPair
 from fastapi_utils.inferring_router import InferringRouter
 
 user_controller_router = InferringRouter()
@@ -56,7 +57,7 @@ class UserController:
         )
 
     '''
-    private method
+    private route
     needs refresh token
     '''
     @user_controller_router.post("/token", response_model=TokenPair)
@@ -71,16 +72,35 @@ class UserController:
         )
 
     '''
-    private method
+    private route
     needs access token
     '''
     @user_controller_router.post("/get", response_model=PublicUser)
     async def get_user(self, token_data: Annotated[TokenData, Depends(authenticate_access_token)]):
         return self.userService.get_user(token_data.username)
 
+    '''
+    private route
+    needs access token
+    '''
+    @user_controller_router.post("/books/like")
+    async def like_book(self, book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(authenticate_access_token)]):
+        if self.userService.like_book(token_data.username, book_id):
+            return JSONResponse({"msg": "Success"})
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
+
+    '''
+    private route
+    needs access token
+    '''
+    @user_controller_router.post("/books/get", response_model=list[BookIdModel])
+    async def get_books(self, token_data: Annotated[TokenData, Depends(authenticate_access_token)]):
+        return self.userService.get_liked_books(token_data.username)
+
 
 '''
-private method call example
+private route call example
 '''
 # token = "token"
 # rs = rq.post("http://localhost:8000/users/token", headers={
