@@ -28,10 +28,10 @@ class UserService:
     def get_user(self, username) -> PublicUser | None:
         return  self.userRepository.get_user(username)
 
-    def like_book(self, username, book_id) -> bool:
+    def like_book(self, username: str, book_id: int) -> bool:
         return  self.userRepository.like_book(username, book_id)
 
-    def get_liked_books(self, username) -> list[BookIdModel]:
+    def get_liked_books(self, username: str) -> list[BookIdModel]:
         return self.userRepository.get_liked_books(username)
 
 

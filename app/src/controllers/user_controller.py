@@ -5,12 +5,15 @@ from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette.responses import JSONResponse
 from src.services.user_service import UserService
-from fastapi_utils.cbv import cbv
 from src.data_models.user import FullUserModel, PublicUser, TokenData, TokenPair
 from fastapi_utils.inferring_router import InferringRouter
 
-user_controller_router = InferringRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/login")
+user_controller_router = InferringRouter(prefix="/users", tags=["User"])
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
+user_service = UserService()
+
+def get_user_service() -> UserService:
+    return user_service
 
 async def authenticate_access_token(token: Annotated[str, Depends(oauth2_scheme)]):
     token_data = auth.decrypt_token(token)
@@ -28,75 +31,71 @@ async def authenticate_refresh_token(token: Annotated[str, Depends(oauth2_scheme
 
     return token_data
 
-@cbv(user_controller_router)
-class UserController:
-    def __init__(self):
-        self.userService = UserService()
 
-    @user_controller_router.post("/register")
-    async def register(self, user: FullUserModel):
-        usr = self.userService.register(user)
+@user_controller_router.post("/register")
+async def register(user: FullUserModel, service = Depends(get_user_service)):
+    usr = service.register(user)
 
-        if usr:
-            return JSONResponse({"msg": "Success"})
-        else:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
+    if usr:
+        return JSONResponse({"msg": "Success"})
+    else:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
 
-    @user_controller_router.post("/login", response_model=TokenPair)
-    async def get_access_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
-        if not self.userService.authenticate_by_password(form_data.username, form_data.password):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Icorrect username or password")
+@user_controller_router.post("/login", response_model=TokenPair)
+async def get_access_token(form_data: OAuth2PasswordRequestForm = Depends(), service = Depends(get_user_service)):
+    if not service.authenticate_by_password(form_data.username, form_data.password):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Icorrect username or password")
 
-        access_token = self.userService.create_access_token(form_data.username)
-        refresh_token = self.userService.create_refresh_token(form_data.username)
-        self.userService.add_refresh_token(refresh_token)
+    access_token = service.create_access_token(form_data.username)
+    refresh_token = service.create_refresh_token(form_data.username)
+    service.add_refresh_token(refresh_token)
 
-        return TokenPair(
-            access_token = access_token.token_str,
-            refresh_token = refresh_token.token_str
-        )
+    return TokenPair(
+        access_token = access_token.token_str,
+        refresh_token = refresh_token.token_str
+    )
 
-    '''
-    private route
-    needs refresh token
-    '''
-    @user_controller_router.post("/token", response_model=TokenPair)
-    async def refresh_token(self, token_data: Annotated[TokenData, Depends(authenticate_refresh_token)]):
-        self.userService.invalidate_refresh_token(token_data)
-        access_token = self.userService.create_access_token(token_data.username)
-        refresh_token = self.userService.create_refresh_token(token_data.username)
+'''
+private route
+needs refresh token
+'''
+@user_controller_router.get("/token", response_model=TokenPair)
+async def refresh_token(token_data: Annotated[TokenData, Depends(authenticate_refresh_token)], service = Depends(get_user_service)):
+    service.invalidate_refresh_token(token_data)
+    access_token = service.create_access_token(token_data.username)
+    refresh_token = service.create_refresh_token(token_data.username)
 
-        return TokenPair(
-            access_token = access_token.token_str,
-            refresh_token = refresh_token.token_str
-        )
+    return TokenPair(
+        access_token = access_token.token_str,
+        refresh_token = refresh_token.token_str
+    )
 
-    '''
-    private route
-    needs access token
-    '''
-    @user_controller_router.post("/get", response_model=PublicUser)
-    async def get_user(self, token_data: Annotated[TokenData, Depends(authenticate_access_token)]):
-        return self.userService.get_user(token_data.username)
+'''
+private route
+needs access token
+'''
+@user_controller_router.get("", response_model=PublicUser)
+async def get_user(token_data: Annotated[TokenData, Depends(authenticate_access_token)], service = Depends(get_user_service)):
+    return service.get_user(token_data.username)
 
-    '''
-    private route
-    needs access token
-    '''
-    @user_controller_router.post("/books/like")
-    async def like_book(self, book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(authenticate_access_token)]):
-        if self.userService.like_book(token_data.username, book_id):
-            return JSONResponse({"msg": "Success"})
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
+'''
+private route
+needs access token
+'''
+@user_controller_router.post("/books/like")
+async def like_book(book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(authenticate_access_token)], service = Depends(get_user_service)):
+    if service.like_book(token_data.username, book_id.id):
+        return JSONResponse({"msg": "Success"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
 
-    '''
-    private route
-    needs access token
-    '''
-    @user_controller_router.post("/books/get", response_model=list[BookIdModel])
-    async def get_books(self, token_data: Annotated[TokenData, Depends(authenticate_access_token)]):
-        return self.userService.get_liked_books(token_data.username)
+'''
+private route
+needs access token
+'''
+@user_controller_router.get("/books", response_model=list[BookIdModel])
+async def get_books(token_data: Annotated[TokenData, Depends(authenticate_access_token)], service = Depends(get_user_service)):
+    return service.get_liked_books(token_data.username)
 
 
 '''

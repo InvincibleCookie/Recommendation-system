@@ -8,10 +8,10 @@ import os
 
 app = FastAPI()
 
-app.include_router(user_controller_router, prefix="/user", tags=["User"])
-app.include_router(book_controller_router, prefix="/book", tags=["Book"])
-app.include_router(author_controller_router, prefix="/author", tags=["Author"])
-app.include_router(genre_controller_router, prefix="/genre", tags=["Genre"])
+app.include_router(user_controller_router)
+app.include_router(book_controller_router)
+app.include_router(author_controller_router)
+app.include_router(genre_controller_router)
 
 if __name__ == '__main__':
     port = os.environ.get("MAIN_SERVER_PORT")
