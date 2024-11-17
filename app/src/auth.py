@@ -1,28 +1,30 @@
 import os
+from typing import Annotated
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 import jwt
 import random, string
-from passlib.context import CryptContext
 from src.data_models.user import FullTokenData, TokenData
 from datetime import datetime, timedelta, timezone
+import bcrypt
 
-SECRET_KEY = os.environ.get("PASSHASH_SECRET_KEY", "fail")
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "fail")
 
 if SECRET_KEY == "fail":
     print("Bad environment")
     exit(1)
 
 ALGORITHM = "HS256"
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_KEY_EXPIRY_DELTA = timedelta(hours=24)
 REFRESH_KEY_EXPIRY_DELTA = timedelta(days=30)
 ACCESS_KEY_TYPE_KEY = "access"
 REFRESH_KEY_TYPE_KEY = "refresh"
 
 def verify_password(plain_password, hashed_password) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 def decrypt_token(token: str) -> TokenData | None:
     try:
@@ -76,4 +78,20 @@ def create_access_token(username: str):
 def create_refresh_token(username) -> FullTokenData:
         return create_token(username, REFRESH_KEY_EXPIRY_DELTA, REFRESH_KEY_TYPE_KEY)
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
+async def authenticate_access_token(token: Annotated[str, Depends(oauth2_scheme)]):
+    token_data = decrypt_token(token)
+    if (token_data is None or
+            token_data.token_type != ACCESS_KEY_TYPE_KEY):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    return token_data
+
+async def authenticate_refresh_token(token: Annotated[str, Depends(oauth2_scheme)]):
+    token_data = decrypt_token(token)
+    if (token_data is None or
+            token_data.token_type != REFRESH_KEY_TYPE_KEY):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    return token_data
