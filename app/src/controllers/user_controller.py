@@ -64,6 +64,17 @@ async def get_user(token_data: Annotated[TokenData, Depends(auth.authenticate_ac
 private route
 needs access token
 '''
+@user_controller_router.post("/books/like/bulk")
+async def like_book_bulk(book_ids: list[BookIdModel],  token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service: UserService = Depends(get_user_service)):
+    if all([service.like_book(token_data.username, book_id.id) for book_id in book_ids]):
+        return JSONResponse({"msg": "Success"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Failed to add some books")
+
+'''
+private route
+needs access token
+'''
 @user_controller_router.post("/books/like")
 async def like_book(book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service = Depends(get_user_service)):
     if service.like_book(token_data.username, book_id.id):
