@@ -21,3 +21,4 @@ book_to_user_like = Table(
     Column("book_id", ForeignKey("book_data.id"), primary_key=True),
     Column("user_id", ForeignKey("user_data.id"), primary_key=True),
 )
+

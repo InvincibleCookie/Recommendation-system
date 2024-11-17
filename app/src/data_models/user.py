@@ -10,9 +10,34 @@ class UserModel(BaseModel):
 class FullUserModel(UserModel):
     email: str
 
+
+class InternalUser(BaseModel):
+    '''
+    FOR INTERNAL USE ONLY!!!!
+    '''
+
+    id: int
+    username: str
+    email: str
+
+    @staticmethod
+    def from_db(user: UserInDB) -> 'InternalUser':
+        return InternalUser(
+            id = user.id,
+            username = user.username,
+            email = user.email,
+        )
+
 class PublicUser(BaseModel):
     username: str
     email: str
+
+    @staticmethod
+    def from_internal(user: InternalUser) -> 'PublicUser':
+        return PublicUser(
+            username = user.username,
+            email = user.email,
+        )
 
     @staticmethod
     def from_db(user: UserInDB) -> 'PublicUser':

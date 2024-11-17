@@ -1,5 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from typing import Tuple
+from sqlalchemy.sql.selectable import Select
 from src.data_models.genres import GenreFilterModel, GenreModel
 from src.database.postgres_db import PostgresDB
 from src.database.postgres_genre_table import GenreInDB
@@ -32,6 +34,21 @@ class PostgresGenreRepository(GenreRepository):
             except:
                 return None
 
+    def add_sort(self, filt: GenreFilterModel, stmt: Select[Tuple[GenreInDB]]) -> Select[Tuple[GenreInDB]]:
+        if filt.sortBy is None:
+            return stmt
+
+        col = None
+
+        match filt.sortBy:
+            case "name": col = GenreInDB.name
+            case _: return stmt
+
+        if filt.ascendingSort or filt.ascendingSort is None:
+            return stmt.order_by(col.asc())
+
+        return stmt.order_by(col.desc())
+
     def get_genres_by_filter(self, filt: GenreFilterModel) -> list[GenreModel]:
         genres = []
 
@@ -40,6 +57,8 @@ class PostgresGenreRepository(GenreRepository):
 
             if filt.namePattern is not None:
                 stmt = stmt.where(GenreInDB.name.ilike(filt.namePattern))
+
+            stmt = self.add_sort(filt, stmt)
 
             for i in session.scalars(stmt):
                 genres.append(GenreModel.from_db(i))

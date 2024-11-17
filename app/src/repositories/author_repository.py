@@ -10,4 +10,4 @@ class AuthorRepository:
     def get_author(self, author_id: int) -> AuthorModel | None: pass
 
     @abstractmethod
-    def get_author_by_filter(self, filt: AuthorFilterModel) -> list[AuthorModel]: pass
+    def get_authors_by_filter(self, filt: AuthorFilterModel) -> list[AuthorModel]: pass

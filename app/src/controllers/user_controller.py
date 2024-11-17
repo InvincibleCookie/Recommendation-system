@@ -2,35 +2,17 @@ from src.data_models.book import BookIdModel
 import src.auth as auth
 from typing import Annotated
 from fastapi import HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import  OAuth2PasswordRequestForm
 from starlette.responses import JSONResponse
 from src.services.user_service import UserService
 from src.data_models.user import FullUserModel, PublicUser, TokenData, TokenPair
 from fastapi_utils.inferring_router import InferringRouter
 
 user_controller_router = InferringRouter(prefix="/users", tags=["User"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 user_service = UserService()
 
 def get_user_service() -> UserService:
     return user_service
-
-async def authenticate_access_token(token: Annotated[str, Depends(oauth2_scheme)]):
-    token_data = auth.decrypt_token(token)
-    if (token_data is None or
-            token_data.token_type != auth.ACCESS_KEY_TYPE_KEY):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-
-    return token_data
-
-async def authenticate_refresh_token(token: Annotated[str, Depends(oauth2_scheme)]):
-    token_data = auth.decrypt_token(token)
-    if (token_data is None or
-            token_data.token_type != auth.REFRESH_KEY_TYPE_KEY):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-
-    return token_data
-
 
 @user_controller_router.post("/register")
 async def register(user: FullUserModel, service = Depends(get_user_service)):
@@ -60,7 +42,7 @@ private route
 needs refresh token
 '''
 @user_controller_router.get("/token", response_model=TokenPair)
-async def refresh_token(token_data: Annotated[TokenData, Depends(authenticate_refresh_token)], service = Depends(get_user_service)):
+async def refresh_token(token_data: Annotated[TokenData, Depends(auth.authenticate_refresh_token)], service = Depends(get_user_service)):
     service.invalidate_refresh_token(token_data)
     access_token = service.create_access_token(token_data.username)
     refresh_token = service.create_refresh_token(token_data.username)
@@ -75,7 +57,7 @@ private route
 needs access token
 '''
 @user_controller_router.get("", response_model=PublicUser)
-async def get_user(token_data: Annotated[TokenData, Depends(authenticate_access_token)], service = Depends(get_user_service)):
+async def get_user(token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service = Depends(get_user_service)):
     return service.get_user(token_data.username)
 
 '''
@@ -83,7 +65,7 @@ private route
 needs access token
 '''
 @user_controller_router.post("/books/like")
-async def like_book(book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(authenticate_access_token)], service = Depends(get_user_service)):
+async def like_book(book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service = Depends(get_user_service)):
     if service.like_book(token_data.username, book_id.id):
         return JSONResponse({"msg": "Success"})
     else:
@@ -93,8 +75,18 @@ async def like_book(book_id: BookIdModel,  token_data: Annotated[TokenData, Depe
 private route
 needs access token
 '''
+@user_controller_router.post("/books/unlike")
+async def unlike_book(book_id: BookIdModel,  token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service = Depends(get_user_service)):
+    if service.unlike_book(token_data.username, book_id.id):
+        return JSONResponse({"msg": "Success"})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
+'''
+private route
+needs access token
+'''
 @user_controller_router.get("/books", response_model=list[BookIdModel])
-async def get_books(token_data: Annotated[TokenData, Depends(authenticate_access_token)], service = Depends(get_user_service)):
+async def get_books(token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service: UserService = Depends(get_user_service)):
     return service.get_liked_books(token_data.username)
 
 

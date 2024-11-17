@@ -16,4 +16,5 @@ class TokenInDB(Base):
     def __repr__(self) -> str:
         return f"Token(id={self.id}), token={self.token_id}"
 
-from .postgres_user_table import UserInDB # prevents circular import
+# prevents circular import
+from .postgres_user_table import UserInDB

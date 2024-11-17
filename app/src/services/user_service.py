@@ -1,6 +1,6 @@
 from src.data_models.book import BookIdModel
 import src.auth as auth
-from src.data_models.user import FullUserModel, PublicUser, TokenData
+from src.data_models.user import FullUserModel, InternalUser, PublicUser, TokenData
 from src.repositories.postgres.postgres_user_repository import PostgresUserRepository
 
 class UserService:
@@ -27,6 +27,12 @@ class UserService:
 
     def get_user(self, username) -> PublicUser | None:
         return  self.userRepository.get_user(username)
+
+    def get_internal_user(self, username) -> InternalUser | None:
+        '''
+        FOR INTERNAL USE ONLY!!!!
+        '''
+        return self.userRepository.get_internal_user(username)
 
     def like_book(self, username: str, book_id: int) -> bool:
         return  self.userRepository.like_book(username, book_id)

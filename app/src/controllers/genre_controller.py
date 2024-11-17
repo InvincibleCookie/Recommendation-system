@@ -4,6 +4,7 @@ from fastapi_utils.inferring_router import InferringRouter
 
 from src.data_models.genres import GenreFilterModel, GenreModel
 from src.services.genre_service import GenreService
+from .common import get_array_window
 
 
 genre_controller_router = InferringRouter(prefix="/genres", tags=["Genre"])
@@ -24,7 +25,23 @@ async def get_genre(genre_id: int, service = Depends(get_genre_service)):
 @genre_controller_router.get("", response_model=list[GenreModel])
 async def get_genres(
     namePattern: Optional[str] = Query(None, description="Filter by author name"),
+    ascendingSort: Optional[bool] = Query(None, description="Sort in ascending order"),
+    sortBy: Optional[str] = Query(None, description="Sort by parameter"),
+    offset: Optional[int] = Query(None, description="Number of items that will be skipped in the returned array"),
+    itemCount: Optional[int] = Query(None, description="Max number of items to be returned"),
     service = Depends(get_genre_service)
 ):
-    filt = GenreFilterModel(namePattern=namePattern if namePattern is not None else "%")
-    return service.get_genres_by_filt(filt)
+    filt = GenreFilterModel(
+        namePattern=namePattern if namePattern is not None else "%",
+        ascendingSort=ascendingSort,
+        sortBy=sortBy,
+    )
+
+    genres = service.get_genres_by_filt(filt)
+    if offset is None:
+        offset = 0
+
+    if itemCount == None:
+        itemCount = len(genres)
+
+    return get_array_window(genres, offset, itemCount)

@@ -14,4 +14,5 @@ class GenreInDB(Base):
     def __repr__(self) -> str:
         return f"Genre(id={self.id}), name={self.name}"
 
-from .postgres_book_table import BookInDB # prevents circular import
+# prevents circular import
+from .postgres_book_table import BookInDB

@@ -36,3 +36,5 @@ class AuthorModel(AuthorIdModel):
 
 class AuthorFilterModel(BaseModel):
     namePattern: str
+    ascendingSort: bool | None
+    sortBy: str | None

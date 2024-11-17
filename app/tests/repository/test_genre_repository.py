@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
-from src.data_models.genres import GenreModel
+from src.data_models.genres import GenreFilterModel, GenreModel
 from src.database.postgres_genre_table import GenreInDB
 from src.repositories.postgres.postgres_genre_repository import PostgresGenreRepository
 from ..database.test_postgres_db import PostgresDB
@@ -52,3 +52,73 @@ def test_get_genre(repository: PostgresGenreRepository):
     assert genre.name == "genre"
 
 
+def test_get_author_by_filt(repository: PostgresGenreRepository):
+    genre_idx1 = repository.add_genre(
+        GenreModel(
+            id = -1,
+            name = "genre1",
+        )
+    )
+    assert genre_idx1 != -1
+
+    genre_idx2 = repository.add_genre(
+        GenreModel(
+            id = -1,
+            name = "genre2",
+        )
+    )
+    assert genre_idx2 != -1
+
+    genre_idx3 = repository.add_genre(
+        GenreModel(
+            id = -1,
+            name = "genre3",
+        )
+    )
+    assert genre_idx3 != -1
+
+
+    filtered = repository.get_genres_by_filter(
+        GenreFilterModel(
+            namePattern="genre1",
+            sortBy=None,
+            ascendingSort=None,
+        )
+    )
+
+    assert len(filtered) == 1
+    assert filtered[0].name == "genre1"
+
+    filtered = repository.get_genres_by_filter(
+        GenreFilterModel(
+            namePattern="%%",
+            sortBy="name",
+            ascendingSort=None,
+        )
+    )
+
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key=lambda a: a.name)
+
+    filtered = repository.get_genres_by_filter(
+        GenreFilterModel(
+            namePattern="%%",
+            sortBy="name",
+            ascendingSort=True,
+        )
+    )
+
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key=lambda a: a.name)
+
+
+    filtered = repository.get_genres_by_filter(
+        GenreFilterModel(
+            namePattern="%%",
+            sortBy="name",
+            ascendingSort=False,
+        )
+    )
+
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key=lambda a: a.name, reverse=True)

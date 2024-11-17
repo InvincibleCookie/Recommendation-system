@@ -1,5 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from typing import Tuple
+from sqlalchemy.sql.selectable import Select
 from src.data_models.author import AuthorFilterModel, AuthorModel
 from src.database.postgres_author_table import AuthorInDB
 from src.database.postgres_db import PostgresDB
@@ -32,6 +34,21 @@ class PostgresAuthorRepository(AuthorRepository):
             except:
                 return None
 
+    def add_sort(self, filt: AuthorFilterModel, stmt: Select[Tuple[AuthorInDB]]) -> Select[Tuple[AuthorInDB]]:
+        if filt.sortBy is None:
+            return stmt
+
+        col = None
+
+        match filt.sortBy:
+            case "name": col = AuthorInDB.name
+            case _: return stmt
+
+        if filt.ascendingSort or filt.ascendingSort is None:
+            return stmt.order_by(col.asc())
+
+        return stmt.order_by(col.desc())
+
     def get_authors_by_filter(self, filt: AuthorFilterModel) -> list[AuthorModel]:
         authors = []
 
@@ -40,6 +57,8 @@ class PostgresAuthorRepository(AuthorRepository):
 
             if filt.namePattern is not None:
                 stmt = stmt.where(AuthorInDB.name.ilike(filt.namePattern))
+
+            stmt = self.add_sort(filt, stmt)
 
             for i in session.scalars(stmt):
                 authors.append(AuthorModel.from_db(i))

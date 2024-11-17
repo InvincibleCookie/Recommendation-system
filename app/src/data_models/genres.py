@@ -33,3 +33,5 @@ class GenreModel(GenreIdModel):
 
 class GenreFilterModel(BaseModel):
     namePattern: str
+    ascendingSort: bool | None
+    sortBy: str | None

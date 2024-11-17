@@ -17,8 +17,12 @@ class BookInDB(Base):
     genres: Mapped[List["GenreInDB"]] = relationship(secondary=book_to_genre_association, back_populates="books")
     authors: Mapped[List["AuthorInDB"]] = relationship(secondary=book_to_author_association, back_populates="books")
 
+    reviews: Mapped[List["ReviewInDB"]] = relationship(back_populates="book")
+
     def __repr__(self) -> str:
         return f"Book(id={self.id}), title={self.title}"
 
-from .postgres_genre_table import GenreInDB # prevents circular import
-from .postgres_author_table import AuthorInDB # prevents circular import
+# prevents circular import
+from .postgres_genre_table import GenreInDB
+from .postgres_author_table import AuthorInDB
+from .postgres_review_table import ReviewInDB

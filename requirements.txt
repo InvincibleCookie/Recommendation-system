@@ -4,7 +4,7 @@ psycopg2-binary
 SQLAlchemy
 pydantic
 fastapi-utils
-passlib[bcrypt]
+bcrypt
 pyjwt
 sqlalchemy-utils
 typing_inspect

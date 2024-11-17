@@ -1,4 +1,6 @@
+from typing import Tuple
 from sqlalchemy import select, or_
+from sqlalchemy.sql.selectable import Select
 from src.database.postgres_author_table import AuthorInDB
 from src.database.postgres_genre_table import GenreInDB
 from src.data_models.book import BookFilterModel, BookModel
@@ -34,7 +36,7 @@ class PostgresBookRepository(BookRepository):
             raiting = book.raiting,
         )
 
-    def add_book(self, book: BookModel) -> int | None:
+    def add_book(self, book: BookModel) -> int:
         with Session(self._get_engine()) as session:
             new_book = self.book_model_to_db(book)
 
@@ -53,7 +55,7 @@ class PostgresBookRepository(BookRepository):
                 return new_book.id
             except Exception as e:
                 print(e)
-                return None
+                return -1
 
 
     def get_book(self, book_id: int) -> BookModel | None:
@@ -63,6 +65,24 @@ class PostgresBookRepository(BookRepository):
                 return BookModel.from_db(book_db)
             except:
                 return None
+
+    def add_sort(self, filt: BookFilterModel, stmt: Select[Tuple[BookInDB]]) -> Select[Tuple[BookInDB]]:
+        if filt.sortBy is None:
+            return stmt
+
+        col = None
+
+        match filt.sortBy:
+            case "title": col = BookInDB.title
+            case "publishdate": col = BookInDB.publishDate
+            case "raiting": col = BookInDB.raiting
+            case _: return stmt
+
+        if filt.ascendingSort or filt.ascendingSort is None:
+            return stmt.order_by(col.asc())
+
+        return stmt.order_by(col.desc())
+
 
     def get_books_by_filter(self, filt: BookFilterModel) -> list[BookModel]:
         books = []
@@ -93,8 +113,12 @@ class PostgresBookRepository(BookRepository):
             if filt.raitingTo is not None:
                 stmt = stmt.where(BookInDB.raiting <= filt.raitingTo)
 
+            stmt = self.add_sort(filt, stmt)
+
+
             for i in session.scalars(stmt.distinct()):
                 books.append(BookModel.from_db(i))
+
 
             return books
 

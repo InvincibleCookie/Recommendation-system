@@ -188,6 +188,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
 
@@ -202,6 +204,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
 
@@ -216,6 +220,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = base_time,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 1
@@ -229,6 +235,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 2
@@ -242,6 +250,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 2
@@ -255,6 +265,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 3
@@ -269,6 +281,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 2
@@ -282,6 +296,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 2
@@ -295,7 +311,56 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
             publishDateTo = None,
             raitingFrom = None,
             raitingTo = None,
+            sortBy=None,
+            ascendingSort=None,
         )
     )
     assert len(filtered) == 3
 
+    filtered = repository.get_books_by_filter(
+        BookFilterModel(
+            titlePattern = None,
+            genres= None,
+            authors = [AuthorIdModel(id = author_idx2), AuthorIdModel(id = author_idx1)],
+            publishDateFrom = None,
+            publishDateTo = None,
+            raitingFrom = None,
+            raitingTo = None,
+            sortBy='title',
+            ascendingSort=None,
+        )
+    )
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key = lambda a: a.title)
+
+    filtered = repository.get_books_by_filter(
+        BookFilterModel(
+            titlePattern = None,
+            genres= None,
+            authors = [AuthorIdModel(id = author_idx2), AuthorIdModel(id = author_idx1)],
+            publishDateFrom = None,
+            publishDateTo = None,
+            raitingFrom = None,
+            raitingTo = None,
+            sortBy='title',
+            ascendingSort=True,
+        )
+    )
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key = lambda a: a.title)
+
+    filtered = repository.get_books_by_filter(
+        BookFilterModel(
+            titlePattern = None,
+            genres= None,
+            authors = [AuthorIdModel(id = author_idx2), AuthorIdModel(id = author_idx1)],
+            publishDateFrom = None,
+            publishDateTo = None,
+            raitingFrom = None,
+            raitingTo = None,
+            sortBy='title',
+            ascendingSort=False,
+        )
+    )
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key = lambda a: a.title, reverse=True)

@@ -6,6 +6,7 @@ from src.services.book_service import BookService
 from src.data_models.book import BookFilterModel, FullBookModel
 from fastapi import Depends, HTTPException, Query, status
 from fastapi_utils.inferring_router import InferringRouter
+from .common import get_array_window
 
 book_controller_router = InferringRouter(prefix="/books", tags=["Book"])
 book_service = BookService()
@@ -31,7 +32,11 @@ async def get_books(
     publishDateTo: Optional[datetime] = Query(None, description="Filter books published to this date"),
     raitingFrom: Optional[float] = Query(None, description="Minimum rating"),
     raitingTo: Optional[float] = Query(None, description="Maximum rating"),
-    service = Depends(get_book_service)
+    ascendingSort: Optional[bool] = Query(None, description="Sort in ascending order"),
+    sortBy: Optional[str] = Query(None, description="Sort by parameter"),
+    offset: Optional[int] = Query(None, description="Number of items that will be skipped in the returned array"),
+    itemCount: Optional[int] = Query(None, description="Max number of items to be returned"),
+    service: BookService = Depends(get_book_service),
 ):
     filt = BookFilterModel(
         titlePattern=titlePattern,
@@ -41,7 +46,17 @@ async def get_books(
         publishDateTo=publishDateTo,
         raitingFrom=raitingFrom,
         raitingTo=raitingTo,
+        ascendingSort=ascendingSort,
+        sortBy=sortBy,
     )
 
-    return service.get_books_by_filter(filt)
+    books = service.get_books_by_filter(filt)
+
+    if offset is None:
+        offset = 0
+
+    if itemCount == None:
+        itemCount = len(books)
+
+    return get_array_window(books, offset, itemCount)
 

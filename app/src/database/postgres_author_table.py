@@ -14,4 +14,5 @@ class AuthorInDB(Base):
 
     books: Mapped[List["BookInDB"]] = relationship(secondary=book_to_author_association, back_populates="authors")
 
-from .postgres_book_table import BookInDB # prevents circular import
+# prevents circular import
+from .postgres_book_table import BookInDB

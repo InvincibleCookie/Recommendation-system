@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from src.data_models.user import FullUserModel, PublicUser, TokenData
+from src.data_models.user import FullUserModel, InternalUser, PublicUser, TokenData
 
 class UserRepository:
     @abstractmethod
@@ -16,5 +16,17 @@ class UserRepository:
     def add_refresh_token(self, token: TokenData) -> bool: pass
 
     @abstractmethod
+    def like_book(self, username: str, book_id: int) -> bool: pass
+
+    @abstractmethod
+    def unlike_book(self, username: str, book_id: int) -> bool: pass
+
+    @abstractmethod
     def get_user(self, username) -> PublicUser | None: pass
 
+    @abstractmethod
+    def get_internal_user(self, username) -> InternalUser | None:
+        '''
+        FOR INTERNAL USE ONLY!!!!
+        '''
+        pass

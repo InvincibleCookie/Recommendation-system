@@ -3,7 +3,7 @@ from src.database.postgres_book_table import BookInDB
 import src.auth as auth
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from src.data_models.user import FullUserModel, PublicUser, TokenData
+from src.data_models.user import FullUserModel, InternalUser, PublicUser, TokenData
 from src.database.postgres_db import PostgresDB
 from src.database.postgres_token_table import TokenInDB
 from src.database.postgres_user_table import UserInDB
@@ -80,15 +80,11 @@ class PostgresUserRepository(UserRepository):
             return True
 
     def get_user(self, username) -> PublicUser | None:
-        with Session(self._get_engine()) as session:
-            stmt = select(UserInDB).where(UserInDB.username == username)
+        internal = self.get_internal_user(username)
+        if internal is None:
+            return None
 
-            user = session.scalar(stmt)
-
-            if user is None:
-                return None
-
-            return PublicUser.from_db(user)
+        return PublicUser.from_internal(internal)
 
     def like_book(self, username: str, book_id: int) -> bool:
         with Session(self._get_engine()) as session:
@@ -104,10 +100,33 @@ class PostgresUserRepository(UserRepository):
             except:
                 return False
 
+            if book in users[0].liked_books:
+                return True
+
             users[0].liked_books.append(book)
             session.commit()
             return True
 
+    def unlike_book(self, username: str, book_id: int) -> bool:
+        with Session(self._get_engine()) as session:
+            stmt = select(UserInDB).where(UserInDB.username == username)
+            users = session.scalars(stmt).all()
+
+            if len(users) != 1:
+                return False
+
+            book = None
+            try:
+                book = session.get_one(BookInDB, book_id)
+            except:
+                return False
+
+            if not book in users[0].liked_books:
+                return False
+
+            users[0].liked_books.remove(book)
+            session.commit()
+            return True
 
     def get_liked_books(self, username: str) -> list[BookIdModel]:
         with Session(self._get_engine()) as session:
@@ -124,3 +143,13 @@ class PostgresUserRepository(UserRepository):
 
             return books
 
+    def get_internal_user(self, username) -> InternalUser | None:
+        with Session(self._get_engine()) as session:
+            stmt = select(UserInDB).where(UserInDB.username == username)
+
+            user = session.scalar(stmt)
+
+            if user is None:
+                return None
+
+            return InternalUser.from_db(user)

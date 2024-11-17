@@ -6,12 +6,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy_utils import drop_database
 
 from src.data_models.book import BookModel
-from src.repositories.postgres.postgres_author_repository import PostgresAuthorRepository
 from src.repositories.postgres.postgres_book_repository import PostgresBookRepository
-from src.repositories.postgres.postgres_genre_repository import PostgresGenreRepository
 from src import auth
 from src.database.postgres_token_table import TokenInDB
-from src.data_models.user import FullTokenData, FullUserModel, PublicUser, TokenData
+from src.data_models.user import FullUserModel
 from src.database.postgres_user_table import UserInDB
 from ..database.test_postgres_db import PostgresDB
 from src.repositories.postgres.postgres_user_repository import PostgresUserRepository
@@ -41,7 +39,7 @@ def test_register(repository, engine):
         password="password"
     )
 
-    repository.register(user)
+    assert(repository.register(user))
 
     with Session(engine) as session:
         stmt = select(UserInDB)
@@ -91,6 +89,14 @@ def test_get_user(repository: PostgresUserRepository, engine):
     assert user is not None
     assert user.username == "username"
 
+def test_get_internal_user(repository: PostgresUserRepository, engine):
+    test_register(repository, engine)
+
+    user = repository.get_internal_user("username")
+
+    assert user is not None
+    assert user.username == "username"
+
 def test_like_book(repository: PostgresUserRepository,
                    book_repository: PostgresBookRepository,
                    engine):
@@ -120,6 +126,19 @@ def test_like_book(repository: PostgresUserRepository,
         assert len(user_db.liked_books) == 1
         assert user_db.liked_books[0].title == "title"
 
+def test_unlike_book(repository: PostgresUserRepository,
+                   book_repository: PostgresBookRepository,
+                   engine):
+    test_like_book(repository,book_repository, engine)
+    ids = repository.get_liked_books("username")
+
+    assert len(ids) > 0
+
+    assert repository.unlike_book("username", ids[0].id)
+    assert not repository.unlike_book("username", ids[0].id)
+
+    ids2 = repository.get_liked_books("username")
+    assert len(ids) == len(ids2)+1
 
 def test_get_liked_books(repository: PostgresUserRepository,
                    book_repository: PostgresBookRepository,

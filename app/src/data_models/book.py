@@ -12,6 +12,9 @@ class BookIdModel(BaseModel):
     def from_db(book: BookInDB) -> 'BookIdModel':
         return BookIdModel(id = book.id)
 
+class BookLikeModel(BookIdModel):
+    like: bool
+
 class FullBookModel(BookIdModel):
     title: str
     authors: list[AuthorModel]
@@ -55,4 +58,6 @@ class BookFilterModel(BaseModel):
     publishDateTo: datetime | None
     raitingFrom: float | None
     raitingTo: float | None
+    ascendingSort: bool | None
+    sortBy: str | None
 
