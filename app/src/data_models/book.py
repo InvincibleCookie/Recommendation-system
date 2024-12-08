@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
+import ast
 
 from src.database.postgres_book_table import BookInDB
 from src.data_models.genres import GenreIdModel, GenreModel
@@ -60,4 +61,39 @@ class BookFilterModel(BaseModel):
     raitingTo: float | None
     ascendingSort: bool | None
     sortBy: str | None
+
+class SimpleBook(BaseModel):
+    title: str
+    authors: list[str]
+    cover_link: str
+
+class BookRecommedation(BaseModel):
+    recommend: list[SimpleBook]
+
+    @staticmethod
+    def from_list(df: list) -> 'None | BookRecommedation':
+        res = []
+        for i in df:
+            if len(i) != 3:
+                return None
+
+            try:
+                ls = ast.literal_eval(i[1])
+
+                res.append(
+                    SimpleBook(
+                        title=i[0],
+                        authors=ls,
+                        cover_link=i[2]
+                    )
+                )
+            except:
+                return None
+
+        return BookRecommedation(recommend=res)
+
+
+
+
+
 

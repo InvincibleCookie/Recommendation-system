@@ -6,6 +6,7 @@ from src.controllers.book_controller import book_controller_router
 from src.controllers.author_controller import author_controller_router
 from src.controllers.genre_controller import genre_controller_router
 from src.controllers.review_controller import review_controller_router
+from src.controllers.ai_controller import ai_controller_router
 
 app = FastAPI()
 
@@ -14,6 +15,7 @@ app.include_router(book_controller_router)
 app.include_router(author_controller_router)
 app.include_router(genre_controller_router)
 app.include_router(review_controller_router)
+app.include_router(ai_controller_router)
 
 if __name__ == '__main__':
     port = os.environ.get("MAIN_SERVER_PORT")

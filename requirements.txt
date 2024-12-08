@@ -9,3 +9,5 @@ pyjwt
 sqlalchemy-utils
 typing_inspect
 python-multipart
+pandas
+scikit-learn
