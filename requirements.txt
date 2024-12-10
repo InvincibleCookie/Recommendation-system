@@ -11,3 +11,4 @@ typing_inspect
 python-multipart
 pandas
 scikit-learn
+python-dotenv

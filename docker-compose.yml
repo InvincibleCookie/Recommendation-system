@@ -22,7 +22,7 @@ services:
     depends_on:
       - dataBase
     working_dir: /recommend
-    command: bash -c "pip install -r requirements.txt && python3 app/main.py"
+    command: bash -c "pip3.12 install -r requirements.txt && python3.12 app/main.py"
 
 volumes:
   postgres_data:
