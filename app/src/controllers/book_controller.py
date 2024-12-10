@@ -3,7 +3,7 @@ from typing import List, Optional
 from src.data_models.author import AuthorIdModel
 from src.data_models.genres import GenreIdModel
 from src.services.book_service import BookService
-from src.data_models.book import BookFilterModel, FullBookModel
+from src.data_models.book import BookFilterModel, BookModel
 from fastapi import Depends, HTTPException, Query, status
 from fastapi_utils.inferring_router import InferringRouter
 from .common import get_array_window
@@ -14,7 +14,7 @@ book_service = BookService()
 def get_book_service() -> BookService:
     return book_service
 
-@book_controller_router.get("/{book_id}", response_model=FullBookModel)
+@book_controller_router.get("/{book_id}", response_model=BookModel)
 async def get_book(book_id: int, service = Depends(get_book_service)):
     book = service.get_book(book_id)
 
@@ -23,7 +23,7 @@ async def get_book(book_id: int, service = Depends(get_book_service)):
 
     return book
 
-@book_controller_router.get("", response_model=list[FullBookModel])
+@book_controller_router.get("", response_model=list[BookModel])
 async def get_books(
     titlePattern: Optional[str] = Query(None, description="Filter by book title pattern"),
     authors: Optional[List[int]] = Query(None, description="List of author IDs"),

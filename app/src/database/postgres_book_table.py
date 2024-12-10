@@ -14,6 +14,7 @@ class BookInDB(Base):
     publishDate: Mapped[datetime]
     coverLink: Mapped[str]
     raiting: Mapped[float]
+    popularity: Mapped[int]
     genres: Mapped[List["GenreInDB"]] = relationship(secondary=book_to_genre_association, back_populates="books")
     authors: Mapped[List["AuthorInDB"]] = relationship(secondary=book_to_author_association, back_populates="books")
 

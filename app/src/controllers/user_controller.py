@@ -25,6 +25,7 @@ async def register(user: FullUserModel, service = Depends(get_user_service)):
 
 @user_controller_router.post("/login", response_model=TokenPair)
 async def get_access_token(form_data: OAuth2PasswordRequestForm = Depends(), service = Depends(get_user_service)):
+    print(form_data)
     if not service.authenticate_by_password(form_data.username, form_data.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Icorrect username or password")
 

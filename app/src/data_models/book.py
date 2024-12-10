@@ -16,16 +16,6 @@ class BookIdModel(BaseModel):
 class BookLikeModel(BookIdModel):
     like: bool
 
-class FullBookModel(BookIdModel):
-    title: str
-    authors: list[AuthorModel]
-    genres: list[GenreModel]
-    publishDate: datetime
-    publisher: str
-    description: str
-    coverLink: str
-    raiting: float
-
 class BookModel(BookIdModel):
     title: str
     authors: list[AuthorIdModel]
@@ -35,6 +25,7 @@ class BookModel(BookIdModel):
     description: str
     coverLink: str
     raiting: float
+    popularity: int
 
 
     @staticmethod
@@ -49,6 +40,7 @@ class BookModel(BookIdModel):
             description = book.description,
             coverLink = book.coverLink,
             raiting = book.raiting,
+            popularity = book.popularity,
         )
 
 class BookFilterModel(BaseModel):

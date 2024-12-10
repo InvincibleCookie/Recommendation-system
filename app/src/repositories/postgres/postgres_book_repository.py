@@ -34,6 +34,7 @@ class PostgresBookRepository(BookRepository):
             description = book.description,
             coverLink = book.coverLink,
             raiting = book.raiting,
+            popularity = book.popularity,
         )
 
     def add_book(self, book: BookModel) -> int:
@@ -76,6 +77,7 @@ class PostgresBookRepository(BookRepository):
             case "title": col = BookInDB.title
             case "publishdate": col = BookInDB.publishDate
             case "raiting": col = BookInDB.raiting
+            case "popularity": col = BookInDB.popularity
             case _: return stmt
 
         if filt.ascendingSort or filt.ascendingSort is None:

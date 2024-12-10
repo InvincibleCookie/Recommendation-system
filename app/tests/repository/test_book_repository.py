@@ -73,6 +73,7 @@ def test_add_book(repository: PostgresBookRepository,
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100,
     )
     repository.add_book(book)
 
@@ -98,6 +99,7 @@ def test_get_book(repository: PostgresBookRepository):
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100,
     )
 
     book_id = repository.add_book(book)
@@ -150,6 +152,7 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=10,
     )
     repository.add_book(book)
 
@@ -163,6 +166,7 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=90,
     )
     repository.add_book(book)
 
@@ -176,6 +180,7 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100,
     )
     repository.add_book(book)
 
@@ -364,3 +369,35 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
     )
     assert len(filtered) == 3
     assert filtered == sorted(filtered, key = lambda a: a.title, reverse=True)
+
+    filtered = repository.get_books_by_filter(
+        BookFilterModel(
+            titlePattern = None,
+            genres= None,
+            authors = [],
+            publishDateFrom = None,
+            publishDateTo = None,
+            raitingFrom = None,
+            raitingTo = None,
+            sortBy='popularity',
+            ascendingSort=False,
+        )
+    )
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key = lambda a: a.popularity, reverse=True)
+
+    filtered = repository.get_books_by_filter(
+        BookFilterModel(
+            titlePattern = None,
+            genres= None,
+            authors = [],
+            publishDateFrom = None,
+            publishDateTo = None,
+            raitingFrom = None,
+            raitingTo = None,
+            sortBy='popularity',
+            ascendingSort=True,
+        )
+    )
+    assert len(filtered) == 3
+    assert filtered == sorted(filtered, key = lambda a: a.popularity, reverse=False)

@@ -112,6 +112,7 @@ def test_like_book(repository: PostgresUserRepository,
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100,
     )
     book_id = book_repository.add_book(book)
     assert book_id is not None
@@ -155,10 +156,11 @@ def test_get_liked_books(repository: PostgresUserRepository,
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100,
     )
     book_id = book_repository.add_book(book)
 
-    assert book_id is not None
+    assert book_id != -1
 
     repository.like_book("username", book_id)
 

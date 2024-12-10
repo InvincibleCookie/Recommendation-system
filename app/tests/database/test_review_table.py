@@ -31,7 +31,8 @@ def test_table(engine):
         publisher = "man",
         publishDate = datetime.now(),
         coverLink = "link",
-        raiting = 5.0
+        raiting = 5.0,
+        popularity = 100,
     )
 
     ireview = ReviewInDB(

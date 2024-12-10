@@ -59,6 +59,7 @@ def test_add_review(repository: ReviewRepository, user_repository: UserRepositor
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100
     )
     book_id = book_repository.add_book(book)
     assert book_id is not None
@@ -110,6 +111,7 @@ def test_get_review(repository: ReviewRepository, book_repository: BookRepositor
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100
     )
     book_id = book_repository.add_book(book)
     assert book_id is not None
@@ -146,6 +148,7 @@ def test_get_reviews_by_filter(repository: ReviewRepository, book_repository: Bo
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100
     )
     book_id1 = book_repository.add_book(book)
     assert book_id1 is not None
@@ -160,6 +163,7 @@ def test_get_reviews_by_filter(repository: ReviewRepository, book_repository: Bo
         description = "its a book",
         coverLink = "link",
         raiting = 5,
+        popularity=100
     )
     book_id2 = book_repository.add_book(book)
     assert book_id2 is not None
