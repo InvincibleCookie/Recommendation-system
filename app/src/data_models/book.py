@@ -68,9 +68,22 @@ class BookRecommedation(BaseModel):
         for i in df:
             if len(i) != 3:
                 return None
-
             try:
                 ls = ast.literal_eval(i[1])
+                if type(i[0]) is not str:
+                    i[0] = "Unknown"
+
+                if type(ls) is not list:
+                    ls = []
+
+                offset = 0
+                for idx in range(len(ls)):
+                    if type(ls[idx-offset]) is not str:
+                        ls.pop(idx-offset)
+                        offset+=1
+
+                if type(i[2]) is not str:
+                    i[2] = "Unknown"
 
                 res.append(
                     SimpleBook(
@@ -80,12 +93,8 @@ class BookRecommedation(BaseModel):
                     )
                 )
             except:
-                return None
+                pass
 
         return BookRecommedation(recommend=res)
-
-
-
-
 
 
