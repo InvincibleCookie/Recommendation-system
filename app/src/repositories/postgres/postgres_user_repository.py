@@ -1,4 +1,4 @@
-from src.data_models.book import BookIdModel
+from src.data_models.book import  BookModel
 from src.database.postgres_book_table import BookInDB
 import src.auth as auth
 from sqlalchemy import select
@@ -128,7 +128,7 @@ class PostgresUserRepository(UserRepository):
             session.commit()
             return True
 
-    def get_liked_books(self, username: str) -> list[BookIdModel]:
+    def get_liked_books(self, username: str) -> list[BookModel]:
         with Session(self._get_engine()) as session:
             stmt = select(UserInDB).where(UserInDB.username == username)
             users = session.scalars(stmt).all()
@@ -139,7 +139,7 @@ class PostgresUserRepository(UserRepository):
             books = []
 
             for i in users[0].liked_books:
-                books.append(BookIdModel.from_db(i))
+                books.append(BookModel.from_db(i))
 
             return books
 

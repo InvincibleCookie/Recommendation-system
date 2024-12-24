@@ -1,6 +1,6 @@
-from src.data_models.book import BookIdModel
+from src.data_models.book import BookModel
 import src.auth as auth
-from src.data_models.user import FullUserModel, InternalUser, PublicUser, TokenData
+from src.data_models.user import FullTokenData, FullUserModel, InternalUser, PublicUser, TokenData
 from src.repositories.postgres.postgres_user_repository import PostgresUserRepository
 
 class UserService:
@@ -13,10 +13,10 @@ class UserService:
     def authenticate_by_password(self, username: str, password: str) -> bool:
         return self.userRepository.autheticate_by_password(username, password)
 
-    def create_access_token(self, username: str):
+    def create_access_token(self, username: str) -> FullTokenData:
         return auth.create_access_token(username)
 
-    def create_refresh_token(self, username: str):
+    def create_refresh_token(self, username: str) -> FullTokenData:
         return auth.create_refresh_token(username)
 
     def add_refresh_token(self, token: TokenData) -> bool:
@@ -37,7 +37,10 @@ class UserService:
     def like_book(self, username: str, book_id: int) -> bool:
         return  self.userRepository.like_book(username, book_id)
 
-    def get_liked_books(self, username: str) -> list[BookIdModel]:
+    def unlike_book(self, username: str, book_id: int) -> bool:
+        return  self.userRepository.unlike_book(username, book_id)
+
+    def get_liked_books(self, username: str) -> list[BookModel]:
         return self.userRepository.get_liked_books(username)
 
 

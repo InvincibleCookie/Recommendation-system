@@ -1,4 +1,4 @@
-from src.data_models.book import BookIdModel
+from src.data_models.book import BookIdModel, BookModel
 import src.auth as auth
 from typing import Annotated
 from fastapi import HTTPException, Depends, status
@@ -97,7 +97,7 @@ async def unlike_book(book_id: BookIdModel,  token_data: Annotated[TokenData, De
 private route
 needs access token
 '''
-@user_controller_router.get("/books", response_model=list[BookIdModel])
+@user_controller_router.get("/books", response_model=list[BookModel])
 async def get_books(token_data: Annotated[TokenData, Depends(auth.authenticate_access_token)], service: UserService = Depends(get_user_service)):
     return service.get_liked_books(token_data.username)
 
