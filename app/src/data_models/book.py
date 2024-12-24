@@ -18,8 +18,8 @@ class BookLikeModel(BookIdModel):
 
 class BookModel(BookIdModel):
     title: str
-    authors: list[AuthorIdModel]
-    genres: list[GenreIdModel]
+    authors: list[AuthorModel]
+    genres: list[GenreModel]
     publishDate: datetime
     publisher: str
     description: str
@@ -33,8 +33,8 @@ class BookModel(BookIdModel):
         return BookModel(
             id = book.id,
             title = book.title,
-            genres = list(map(GenreIdModel.from_db, book.genres)),
-            authors = list(map(AuthorIdModel.from_db, book.authors)),
+            genres = list(map(GenreModel.from_db, book.genres)),
+            authors = list(map(AuthorModel.from_db, book.authors)),
             publishDate = book.publishDate,
             publisher = book.publisher,
             description = book.description,

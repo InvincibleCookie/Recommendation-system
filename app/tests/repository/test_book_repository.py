@@ -1,3 +1,4 @@
+from os import name
 import pytest
 from unittest import mock
 from datetime import datetime, timedelta
@@ -41,33 +42,39 @@ def test_add_book(repository: PostgresBookRepository,
                   genre_repository: PostgresGenreRepository,
                   author_repository: PostgresAuthorRepository,
                   engine):
-    author_idx1 = author_repository.add_author(
-        AuthorModel(
-            id = -1,
-            name = "author1",
-        )
+    author1 = AuthorModel(
+        id = -1,
+        name = "author1",
     )
 
-    author_idx2 = author_repository.add_author(
-        AuthorModel(
-            id = -1,
-            name = "author2",
-        )
+    author_idx1 = author_repository.add_author(author1)
+    assert author_idx1 != -1
+    author1.id = author_idx1
+
+    author2 = AuthorModel(
+        id = -1,
+        name = "author2",
     )
 
-    genre_idx1 = genre_repository.add_genre(
-        GenreModel(
-            id = -1,
-            name = "genre1",
-        )
+    author_idx2 = author_repository.add_author(author2)
+    assert author_idx2 != -1
+    author2.id = author_idx2
+
+
+    genre = GenreModel(
+        id = -1,
+        name = "genre1",
     )
 
+    genre_idx1 = genre_repository.add_genre(genre)
+    assert genre_idx1 != -1
+    genre.id = genre_idx1
 
     book = BookModel(
         id = -1,
         title = "title",
-        authors = [AuthorIdModel(id = author_idx1), AuthorIdModel(id = author_idx2)],
-        genres = [GenreIdModel(id = genre_idx1)],
+        authors = [author1, author2],
+        genres = [genre],
         publishDate = datetime.now(),
         publisher = "pub",
         description = "its a book",
@@ -77,7 +84,7 @@ def test_add_book(repository: PostgresBookRepository,
     )
     repository.add_book(book)
 
-    assert repository.add_book(book)
+    assert repository.add_book(book) != -1
 
     with Session(engine) as session:
         stmt = select(BookInDB)
@@ -114,39 +121,47 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
                              author_repository: PostgresAuthorRepository):
     base_time = datetime.now()
 
-    author_idx1 = author_repository.add_author(
-        AuthorModel(
-            id = -1,
-            name = "author1",
-        )
+    author1 = AuthorModel(
+        id = -1,
+        name = "author1",
     )
 
-    author_idx2 = author_repository.add_author(
-        AuthorModel(
-            id = -1,
-            name = "author2",
-        )
+    author_idx1 = author_repository.add_author(author1)
+    assert author_idx1 != -1
+    author1.id = author_idx1
+
+    author2 = AuthorModel(
+        id = -1,
+        name = "author2",
     )
 
-    genre_idx1 = genre_repository.add_genre(
-        GenreModel(
-            id = -1,
-            name = "genre1",
-        )
+    author_idx2 = author_repository.add_author(author2)
+    assert author_idx2 != -1
+    author2.id = author_idx2
+
+    genre1 = GenreModel(
+        id = -1,
+        name = "genre1",
     )
 
-    genre_idx2 = genre_repository.add_genre(
-        GenreModel(
-            id = -1,
-            name = "genre2",
-        )
+    genre2 = GenreModel(
+        id = -1,
+        name = "genre2",
     )
+
+    genre_idx1 = genre_repository.add_genre(genre1)
+    assert genre_idx1 != -1
+    genre1.id = genre_idx1
+
+    genre_idx2 = genre_repository.add_genre(genre2)
+    assert genre_idx2 != -1
+    genre2.id = genre_idx2
 
     book = BookModel(
         id = -1,
         title = "title",
-        authors = [AuthorIdModel(id = author_idx1), AuthorIdModel(id = author_idx2)],
-        genres = [GenreIdModel(id = genre_idx1)],
+        authors = [author1, author2],
+        genres = [genre1],
         publishDate = base_time + timedelta(hours=1),
         publisher = "pub",
         description = "its a book",
@@ -159,8 +174,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
     book = BookModel(
         id = -1,
         title = "title2",
-        authors = [AuthorIdModel(id = author_idx1)],
-        genres = [GenreIdModel(id = genre_idx2), GenreIdModel(id = genre_idx1)],
+        authors = [author1],
+        genres = [genre2, genre1],
         publishDate = base_time - timedelta(hours=1),
         publisher = "pub",
         description = "its a book",
@@ -173,8 +188,8 @@ def test_get_books_by_filter(repository: PostgresBookRepository,
     book = BookModel(
         id = -1,
         title = "title3",
-        authors = [AuthorIdModel(id = author_idx2)],
-        genres = [GenreIdModel(id = genre_idx2)],
+        authors = [author2],
+        genres = [genre2],
         publishDate = base_time + timedelta(hours=2),
         publisher = "pub",
         description = "its a book",
